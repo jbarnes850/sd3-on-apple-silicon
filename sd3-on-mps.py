@@ -10,6 +10,15 @@ import platform
 import json
 import dataclasses
 import argparse
+from huggingface_hub import login, HfFolder
+
+# Get token from cache
+token = HfFolder.get_token()
+if token is None:
+    raise ValueError("Please log in to Hugging Face using `huggingface-cli login`")
+
+# Login to Hugging Face
+login(token)
 
 SD3_MODEL_CACHE = "./sd3-cache"
 
@@ -25,28 +34,27 @@ print(f"Using device: {device}")
 
 # Create pipeline with recommended settings for SD 3.5
 pipe = StableDiffusionPipeline.from_pretrained(
-    "stabilityai/stable-diffusion-3.5-large",
-    torch_dtype=torch.float32,  # MPS requires float32
+    "stabilityai/stable-diffusion-3.5-medium",
+    torch_dtype=torch.float32,  # MPS doesn't support bfloat16
     cache_dir=SD3_MODEL_CACHE,
     use_safetensors=True,
-    safety_checker=None,  # Disable safety checker for more memory
+    safety_checker=None,
+    requires_safety_checker=False,
+    local_files_only=False,  # Allow downloading the model
+    low_cpu_mem_usage=False,  # Required for proper weight initialization
+    device_map=None  # Don't use device map for MPS
 )
 
 # Memory optimizations for Apple Silicon
-pipe.enable_attention_slicing(slice_size="auto")
-if device == "mps":
-    pipe.enable_model_cpu_offload()
-    # Ensure we're using float32 for MPS compatibility
-    pipe.unet = pipe.unet.to(memory_format=torch.contiguous_format)
-    pipe.vae = pipe.vae.to(memory_format=torch.contiguous_format)
-    if pipe.text_encoder is not None:
-        pipe.text_encoder = pipe.text_encoder.to(memory_format=torch.contiguous_format)
+pipe.enable_attention_slicing()
+pipe.enable_vae_slicing()
 
-# Move pipeline to device
+# Move to device
 pipe = pipe.to(device)
 
-# Generator should be on CPU for MPS
-generator = torch.Generator("cpu").manual_seed(seed)
+# Enable CPU offload for memory efficiency
+if device == "mps":
+    pipe.enable_model_cpu_offload()
 
 def generate_image(prompt, num_inference_steps=28, guidance_scale=3.5):
     print(f"Generating image with prompt: {prompt}")
@@ -57,9 +65,9 @@ def generate_image(prompt, num_inference_steps=28, guidance_scale=3.5):
             prompt=prompt,
             num_inference_steps=num_inference_steps,
             guidance_scale=guidance_scale,
-            generator=generator,
-            height=512,  # Start with smaller size for testing
-            width=512,
+            generator=torch.Generator(device="cpu").manual_seed(seed),
+            height=1024,  # SD 3.5 default
+            width=1024    # SD 3.5 default
         ).images[0]
 
 prompt = """Futuristic deep space observatory interior,
