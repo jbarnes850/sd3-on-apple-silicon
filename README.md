@@ -1,6 +1,14 @@
-# Stable Diffusion 3 on Apple Silicon (MPS)
+# Infinite Canvas CLI: Stable Diffusion 3.5 for Apple Silicon
 
-This code allows you to run Stable Diffusion 3 on Apple Silicon devices using the MPS backend.
+Run Stability AI's latest Stable Diffusion 3.5 model entirely on Apple Silicon devices, with enterprise-grade performance monitoring and optimization. Part of the Infinite Canvas framework for on-device AI.
+
+## Key Features
+
+- **Local-First Processing**: Generate high-quality images without cloud dependencies
+- **Enterprise Performance**: Comprehensive metrics tracking and benchmarking
+- **Hardware Optimization**: Automatic MPS configuration for M1/M2/M3 chips
+- **Memory Management**: Smart RAM detection and optimization
+- **Benchmark Suite**: Built-in tools for performance analysis
 
 ## Prerequisites
 
@@ -8,58 +16,104 @@ This code allows you to run Stable Diffusion 3 on Apple Silicon devices using th
 - Conda
 - Hugging Face API token (optional)
 
-## Setup
+## Quick Start
 
-1. Create a new Conda environment:
-
+1. Create environment:
 ```bash
 conda create -n sd3 python=3.11 -y
 conda activate sd3
 ```
 
-2. Install the required packages:
+2. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Set your Hugging Face API token (if required):
+3. Optional: Set HF token:
 
 ```bash
 export HF_API_TOKEN=your_token_here
 ```
 
-You can add this line to your `.zshrc` file to make it persistent.
-
 ## Usage
 
-1. Save the provided code as `sd3-on-mps.py`.
-
-2. Run the script:
+### Single Image Generation
 
 ```bash
-python sd3-on-mps.py
+python sd3-on-mps.py --mode single --scene-type your_scene_name
 ```
 
-3. The generated image will be saved as `sd3-output-mps.png` in the same directory.
+### Comprehensive Benchmarking
 
-## Notes
+```bash
+python sd3-on-mps.py --mode benchmark
+```
 
-- The code automatically detects the available device (MPS, CUDA, or CPU) and uses the best one.
-- If your system has less than 64 GB of RAM, the code enables attention slicing to reduce memory usage.
-- The model cache is set to `./sd3-cache` to avoid downloading the model repeatedly.
-- The image generation process may take some time depending on your hardware.
-  
-## Tips and Tricks
+## Performance Metrics
 
-You can change how your images look in `sd3-on-mps.py` by adjusting these settings:
+The tool tracks:
 
-- **`seed`**: Set this to a specific number to make the same image again, or leave it as `None` to get different images each time.
-- **`prompt`**: Change this text to create various images (for example, "A sunset over the mountains").
-- **`height` and `width`**: Change these numbers to make the image bigger or smaller (for example, 1024 for bigger images).
-- **`num_inference_steps`**: Use more steps for clearer images. More steps mean more detail but take more time.
-- **`guidance_scale`**: Adjust this to influence how much the image matches the prompt. Higher values make the image more accurate but might look less natural.
+- Generation time
+- Memory usage
+- Tokens per second
+- Step-by-step inference timing
+- Hardware utilization
+- Device-specific metrics
 
-Playing with these options lets you make many different kinds of images.
+## Configuration Options
 
-That's it! You can now generate images using Stable Diffusion 3 on your Apple Silicon device.
+### Core Parameters
+
+- `seed`: Control image reproducibility
+- `height/width`: Output resolution (up to 2048x2048)
+- `num_inference_steps`: Quality vs. speed tradeoff
+- `guidance_scale`: Output fidelity control
+
+### Advanced Settings
+
+- Memory optimization thresholds
+- Device-specific configurations
+- Benchmark parameters
+- Output formats and paths
+
+## Enterprise Features
+
+1. **Performance Monitoring**
+   - Real-time memory tracking
+   - Step-by-step inference timing
+   - Hardware utilization metrics
+
+2. **Quality Control**
+   - Reproducible outputs via seed control
+   - Configurable quality parameters
+   - Detailed generation logs
+
+3. **Resource Management**
+   - Automatic memory optimization
+   - Hardware-aware configurations
+   - Cache management
+
+## Benchmarking
+
+The built-in benchmark suite tests:
+
+- Multiple resolutions (512x512 to 1024x1024)
+- Various inference step counts
+- Different prompt complexities
+- Hardware performance metrics
+
+Results are saved as JSON files with comprehensive metadata.
+
+## Integration
+
+Part of the Infinite Canvas framework, this tool is designed for:
+
+- Creative agencies
+- Design studios
+- Enterprise content teams
+- Local AI workflows
+
+## License
+
+MIT License - See LICENSE file for details.

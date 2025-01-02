@@ -7,6 +7,7 @@
 *.bmp
 *.tiff
 *.webp
+*.json
 
 
 # Byte-compiled / optimized / DLL files
@@ -137,6 +138,7 @@ celerybeat.pid
 .venv
 env/
 venv/
+sd3-env/
 ENV/
 env.bak/
 venv.bak/
