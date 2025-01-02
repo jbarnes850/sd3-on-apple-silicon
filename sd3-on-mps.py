@@ -2,7 +2,7 @@ import os
 import time
 import torch
 import psutil
-from diffusers.pipelines.stable_diffusion_3 import StableDiffusion3Pipeline
+from diffusers import StableDiffusion3Pipeline
 import numpy as np
 from dataclasses import dataclass
 from typing import List
