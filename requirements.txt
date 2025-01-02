@@ -1,8 +1,10 @@
 torch>=2.0.0
-diffusers
-transformers
-huggingface-hub
-protobuf
-sentencepiece
-accelerate
-psutil
+diffusers>=0.25.0
+transformers>=4.41.0
+huggingface-hub>=0.20.0
+protobuf>=4.25.0
+sentencepiece>=0.1.99
+accelerate>=0.26.0
+psutil>=5.9.0
+sentence-transformers>=3.3.1
+nearai>=0.1.5
