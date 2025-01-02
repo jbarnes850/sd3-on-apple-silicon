@@ -2,7 +2,7 @@ import os
 import time
 import torch
 import psutil
-from diffusers import StableDiffusion3Pipeline
+from diffusers import StableDiffusionPipeline
 import numpy as np
 from dataclasses import dataclass
 from typing import List
@@ -23,17 +23,24 @@ print(f"Using seed: {seed}")
 device = "mps" if torch.backends.mps.is_available() else "cpu"
 print(f"Using device: {device}")
 
-# Modify pipeline creation with recommended MPS settings
-pipe = StableDiffusion3Pipeline.from_pretrained(
-    "stabilityai/stable-diffusion-3.5-medium",
-    torch_dtype=torch.float16,
+# Create pipeline with recommended settings for SD 3.5
+pipe = StableDiffusionPipeline.from_pretrained(
+    "stabilityai/stable-diffusion-3.5-large",
+    torch_dtype=torch.float32,  # MPS requires float32
     cache_dir=SD3_MODEL_CACHE,
     use_safetensors=True,
-    variant="fp16",
+    safety_checker=None,  # Disable safety checker for more memory
 )
 
 # Memory optimizations for Apple Silicon
-pipe.enable_attention_slicing()
+pipe.enable_attention_slicing(slice_size="auto")
+if device == "mps":
+    pipe.enable_model_cpu_offload()
+    # Ensure we're using float32 for MPS compatibility
+    pipe.unet = pipe.unet.to(memory_format=torch.contiguous_format)
+    pipe.vae = pipe.vae.to(memory_format=torch.contiguous_format)
+    if pipe.text_encoder is not None:
+        pipe.text_encoder = pipe.text_encoder.to(memory_format=torch.contiguous_format)
 
 # Move pipeline to device
 pipe = pipe.to(device)
@@ -41,9 +48,19 @@ pipe = pipe.to(device)
 # Generator should be on CPU for MPS
 generator = torch.Generator("cpu").manual_seed(seed)
 
-# Check available system RAM and enable attention slicing if less than 64 GB
-if (available_ram := psutil.virtual_memory().available / (1024**3)) < 64:
-    pipe.enable_attention_slicing()
+def generate_image(prompt, num_inference_steps=28, guidance_scale=3.5):
+    print(f"Generating image with prompt: {prompt}")
+    print(f"Steps: {num_inference_steps}, Guidance Scale: {guidance_scale}")
+    
+    with torch.inference_mode():
+        return pipe(
+            prompt=prompt,
+            num_inference_steps=num_inference_steps,
+            guidance_scale=guidance_scale,
+            generator=generator,
+            height=512,  # Start with smaller size for testing
+            width=512,
+        ).images[0]
 
 prompt = """Futuristic deep space observatory interior,
 massive holographic star maps, advanced astronomical instruments,
